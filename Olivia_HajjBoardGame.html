@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Olivia Conlon's Hajj Board Game</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 30px; }
+    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; }
+    th { background-color: #f2f2f2; }
+    button { padding: 10px 20px; font-size: 16px; margin: 5px; }
+    .winner { font-size: 40px; color: green; font-weight: bold; }
+    .loser { font-size: 20px; color: red; font-weight: normal; }
+    #gameOver { display: none; margin-top: 30px; }
+    #resetGame { display: none; margin-top: 20px; }
+    #hajjImage { width: 100%; max-width: 600px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Olivia Conlon's Hajj Board Game</h1>
+
+  <div>
+    <input type="text" id="player1Name" placeholder="Player 1 Name">
+    <input type="text" id="player2Name" placeholder="Player 2 Name">
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+  <div id="hajjImageDiv">
+    <img id="hajjImage" src="https://dq5r178u4t83b.cloudfront.net/wp-content/uploads/sites/55/2018/08/11090702/hajj-rituals-makkah-accorhotels.jpg" alt="Hajj Rituals">
+  </div>
+
+  <div id="gameArea" style="display:none;">
+    <div style="margin-top: 30px;">
+      <button onclick="rollDice()">🎲 Roll Dice</button>
+      <div id="diceResult" style="font-size: 24px; margin: 10px 0;"></div>
+      <div id="cardText" style="font-size: 20px; font-weight: bold; margin-bottom: 20px;"></div>
+    </div>
+
+    <button onclick="playTurn(1)">Play Turn – Player 1</button>
+    <button onclick="playTurn(2)">Play Turn – Player 2</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th id="name1"></th>
+          <th id="name2"></th>
+        </tr>
+      </thead>
+      <tbody id="scoreTable">
+      </tbody>
+      <tfoot>
+        <tr>
+          <td id="total1">Total: 0</td>
+          <td id="total2">Total: 0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <button onclick="undoLastTurn()">Undo Last Turn</button>
+    <button onclick="endGame()">End Game</button>
+  </div>
+
+  <div id="gameOver">
+    <h2 id="winnerText" class="winner"></h2>
+    <h3 id="loserText" class="loser"></h3>
+  </div>
+
+  <div id="resetGame">
+    <button onclick="resetGame()">Reset Game</button>
+  </div>
+
+  <script>
+    const cards = [
+      { text: "Lost your shoe while walking – Minus 10 points", points: -10 },
+      { text: "Helped someone find their tent – Plus 10 points", points: 10 },
+      { text: "Completed Tawaf smoothly – Plus 15 points", points: 15 },
+      { text: "Got sunburnt and needed to rest – Minus 5 points", points: -5 },
+      { text: "Shared water with someone – Plus 5 points", points: 5 },
+      { text: "Lost your group briefly – Minus 10 points", points: -10 },
+      { text: "Donated food to pilgrims – Plus 15 points", points: 15 },
+      { text: "Delayed by crowd at Jamarat – Minus 5 points", points: -5 },
+      { text: "Prayed on time at Arafat – Plus 10 points", points: 10 },
+      { text: "Missed a prayer due to exhaustion – Minus 10 points", points: -10 },
+      { text: "Gave up your place in queue – Plus 5 points", points: 5 },
+      { text: "Overslept and missed breakfast – Minus 5 points", points: -5 },
+      { text: "Guided a lost pilgrim – Plus 10 points", points: 10 },
+      { text: "Accidentally stepped on someone’s foot – Minus 5 points", points: -5 },
+      { text: "Stayed patient in a long queue – Plus 5 points", points: 5 },
+      { text: "Got separated from your luggage – Minus 10 points", points: -10 },
+      { text: "Carried water bottles for your group – Plus 10 points", points: 10 },
+      { text: "Left your ID behind – Minus 5 points", points: -5 },
+      { text: "Prayed Fajr with Jamaah – Plus 10 points", points: 10 },
+      { text: "Was delayed reaching Muzdalifah – Minus 5 points", points: -5 },
+      { text: "Cleaned up a common area – Plus 10 points", points: 10 },
+      { text: "Got stuck in traffic – Minus 5 points", points: -5 },
+      { text: "Helped an elderly person – Plus 15 points", points: 15 },
+      { text: "Dropped your phone in water – Minus 10 points", points: -10 },
+      { text: "Joined Talbiyah loudly with the group – Plus 5 points", points: 5 },
+      { text: "Felt unwell and had to rest – Minus 5 points", points: -5 },
+      { text: "Volunteered for group duties – Plus 10 points", points: 10 },
+      { text: "Ran out of snacks – Minus 5 points", points: -5 },
+      { text: "Helped organise prayer space – Plus 5 points", points: 5 },
+      { text: "Wasted time scrolling on phone – Minus 5 points", points: -5 }
+    ];
+
+    let player1Total = 0;
+    let player2Total = 0;
+    let currentDice = null;
+    let currentCard = null;
+    const history = [];
+    let player1Name = '';
+    let player2Name = '';
+
+    // Reset the score when the page is loaded
+    window.onload = function() {
+      player1Total = 0;
+      player2Total = 0;
+      updateTotals();
+    };
+
+    function startGame() {
+      player1Name = document.getElementById("player1Name").value || "Player 1";
+      player2Name = document.getElementById("player2Name").value || "Player 2";
+      document.getElementById("name1").innerText = player1Name;
+      document.getElementById("name2").innerText = player2Name;
+      document.getElementById("gameArea").style.display = "block";
+      document.getElementById("hajjImageDiv").style.display = "none";
+      player1Total = 0; // Reset totals when starting a new game
+      player2Total = 0;
+      updateTotals();
+    }
+
+    function rollDice() {
+      currentDice = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("diceResult").innerText = "🎲 Dice Roll: " + currentDice;
+    }
+
+    function playTurn(player) {
+      currentCard = cards[Math.floor(Math.random() * cards.length)];
+
+      const row = document.createElement("tr");
+      const cell1 = document.createElement("td");
+      const cell2 = document.createElement("td");
+
+      let cardPoints = currentCard.points * (currentDice || 1); // If no dice rolled, default to 1
+
+      if (player === 1) {
+        cell1.innerText = currentCard.text;
+        cell2.innerText = "";
+        player1Total += cardPoints;
+        history.push({ player: 1, points: cardPoints });
+      } else {
+        cell1.innerText = "";
+        cell2.innerText = currentCard.text;
+        player2Total += cardPoints;
+        history.push({ player: 2, points: cardPoints });
+      }
+
+      row.appendChild(cell1);
+      row.appendChild(cell2);
+      document.getElementById("scoreTable").appendChild(row);
+
+      updateTotals();
+
+      currentDice = null; // Reset dice after play
+      document.getElementById("diceResult").innerText = "";
+    }
+
+    function updateTotals() {
+      document.getElementById("total1").innerText = "Total: " + player1Total;
+      document.getElementById("total2").innerText = "Total: " + player2Total;
+    }
+
+    function undoLastTurn() {
+      if (history.length === 0) return;
+
+      const last = history.pop();
+      const table = document.getElementById("scoreTable");
+      if (table.rows.length > 0) table.deleteRow(table.rows.length - 1);
+
+      if (last.player === 1) player1Total -= last.points;
+      else player2Total -= last.points;
+
+      updateTotals();
+    }
+
+    function endGame() {
+      let winner, loser;
+      if (player1Total > player2Total) {
+        winner = player1Name;
+        loser = player2Name;
+      } else if (player1Total < player2Total) {
+        winner = player2Name;
+        loser = player1Name;
+      } else {
+        winner = "It's a Tie!";
+        loser = "";
+      }
+
+      document.getElementById("winnerText").innerText = winner + " Wins with " + (winner === "It's a Tie!" ? "" : player1Total > player2Total ? player1Total : player2Total) + " points!";
+      document.getElementById("loserText").innerText = loser + " with " + (loser === "" ? "" : player1Total < player2Total ? player1Total : player2Total) + " points.";
+
+      document.getElementById("gameArea").style.display = "none";
+      document.getElementById("gameOver").style.display = "block";
+      document.getElementById("resetGame").style.display = "block"; // Show reset button after game ends
+    }
+
+    function resetGame() {
+      location.reload();  // Refresh the page to reset the game state
+    }
+  </script>
+
+</body>
+</html>
