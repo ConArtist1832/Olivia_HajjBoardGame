@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>Olivia Conlon's Hajj Board Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial; text-align: center; padding: 30px; }
-    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; margin: 0; }
+    input, button { padding: 10px; font-size: 16px; margin: 5px; width: 80%; max-width: 300px; }
+    table { width: 100%; max-width: 600px; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; word-wrap: break-word; }
     th { background-color: #f2f2f2; }
-    button { padding: 10px 20px; font-size: 16px; margin: 5px; }
-    .winner { font-size: 40px; color: green; font-weight: bold; }
-    .loser { font-size: 20px; color: red; font-weight: normal; }
-    #gameOver { display: none; margin-top: 30px; }
+    .winner { font-size: 28px; color: green; font-weight: bold; }
+    .loser { font-size: 18px; color: red; }
+    .positive { color: green; font-weight: bold; }
+    .negative { color: red; font-weight: bold; }
+    #gameOver { display: none; margin-top: 20px; }
     #resetGame { display: none; margin-top: 20px; }
     #hajjImage { width: 100%; max-width: 600px; margin-top: 20px; }
   </style>
@@ -31,10 +34,10 @@
   </div>
 
   <div id="gameArea" style="display:none;">
-    <div style="margin-top: 30px;">
+    <div style="margin-top: 20px;">
       <button onclick="rollDice()">🎲 Roll Dice</button>
-      <div id="diceResult" style="font-size: 24px; margin: 10px 0;"></div>
-      <div id="cardText" style="font-size: 20px; font-weight: bold; margin-bottom: 20px;"></div>
+      <div id="diceResult" style="font-size: 20px; margin: 10px 0;"></div>
+      <div id="cardText" style="font-size: 18px; font-weight: bold; margin-bottom: 15px;"></div>
     </div>
 
     <button onclick="playTurn(1)">Play Turn – Player 1</button>
@@ -47,8 +50,7 @@
           <th id="name2"></th>
         </tr>
       </thead>
-      <tbody id="scoreTable">
-      </tbody>
+      <tbody id="scoreTable"></tbody>
       <tfoot>
         <tr>
           <td id="total1">Total: 0</td>
@@ -72,36 +74,36 @@
 
   <script>
     const cards = [
-      { text: "Lost your shoe while walking – Minus 10 points", points: -10 },
-      { text: "Helped someone find their tent – Plus 10 points", points: 10 },
-      { text: "Completed Tawaf smoothly – Plus 15 points", points: 15 },
-      { text: "Got sunburnt and needed to rest – Minus 5 points", points: -5 },
-      { text: "Shared water with someone – Plus 5 points", points: 5 },
-      { text: "Lost your group briefly – Minus 10 points", points: -10 },
-      { text: "Donated food to pilgrims – Plus 15 points", points: 15 },
-      { text: "Delayed by crowd at Jamarat – Minus 5 points", points: -5 },
-      { text: "Prayed on time at Arafat – Plus 10 points", points: 10 },
-      { text: "Missed a prayer due to exhaustion – Minus 10 points", points: -10 },
-      { text: "Gave up your place in queue – Plus 5 points", points: 5 },
-      { text: "Overslept and missed breakfast – Minus 5 points", points: -5 },
-      { text: "Guided a lost pilgrim – Plus 10 points", points: 10 },
-      { text: "Accidentally stepped on someone’s foot – Minus 5 points", points: -5 },
-      { text: "Stayed patient in a long queue – Plus 5 points", points: 5 },
-      { text: "Got separated from your luggage – Minus 10 points", points: -10 },
-      { text: "Carried water bottles for your group – Plus 10 points", points: 10 },
-      { text: "Left your ID behind – Minus 5 points", points: -5 },
-      { text: "Prayed Fajr with Jamaah – Plus 10 points", points: 10 },
-      { text: "Was delayed reaching Muzdalifah – Minus 5 points", points: -5 },
-      { text: "Cleaned up a common area – Plus 10 points", points: 10 },
-      { text: "Got stuck in traffic – Minus 5 points", points: -5 },
-      { text: "Helped an elderly person – Plus 15 points", points: 15 },
-      { text: "Dropped your phone in water – Minus 10 points", points: -10 },
-      { text: "Joined Talbiyah loudly with the group – Plus 5 points", points: 5 },
-      { text: "Felt unwell and had to rest – Minus 5 points", points: -5 },
-      { text: "Volunteered for group duties – Plus 10 points", points: 10 },
-      { text: "Ran out of snacks – Minus 5 points", points: -5 },
-      { text: "Helped organise prayer space – Plus 5 points", points: 5 },
-      { text: "Wasted time scrolling on phone – Minus 5 points", points: -5 }
+      { text: "Lost your shoe while walking", points: -10 },
+      { text: "Helped someone find their tent", points: 10 },
+      { text: "Completed Tawaf smoothly", points: 15 },
+      { text: "Got sunburnt and needed to rest", points: -5 },
+      { text: "Shared water with someone", points: 5 },
+      { text: "Lost your group briefly", points: -10 },
+      { text: "Donated food to pilgrims", points: 15 },
+      { text: "Delayed by crowd at Jamarat", points: -5 },
+      { text: "Prayed on time at Arafat", points: 10 },
+      { text: "Missed a prayer due to exhaustion", points: -10 },
+      { text: "Gave up your place in queue", points: 5 },
+      { text: "Overslept and missed breakfast", points: -5 },
+      { text: "Guided a lost pilgrim", points: 10 },
+      { text: "Accidentally stepped on someone’s foot", points: -5 },
+      { text: "Stayed patient in a long queue", points: 5 },
+      { text: "Got separated from your luggage", points: -10 },
+      { text: "Carried water bottles for your group", points: 10 },
+      { text: "Left your ID behind", points: -5 },
+      { text: "Prayed Fajr with Jamaah", points: 10 },
+      { text: "Was delayed reaching Muzdalifah", points: -5 },
+      { text: "Cleaned up a common area", points: 10 },
+      { text: "Got stuck in traffic", points: -5 },
+      { text: "Helped an elderly person", points: 15 },
+      { text: "Dropped your phone in water", points: -10 },
+      { text: "Joined Talbiyah loudly with the group", points: 5 },
+      { text: "Felt unwell and had to rest", points: -5 },
+      { text: "Volunteered for group duties", points: 10 },
+      { text: "Ran out of snacks", points: -5 },
+      { text: "Helped organise prayer space", points: 5 },
+      { text: "Wasted time scrolling on phone", points: -5 }
     ];
 
     let player1Total = 0;
@@ -112,13 +114,6 @@
     let player1Name = '';
     let player2Name = '';
 
-    // Reset the score when the page is loaded
-    window.onload = function() {
-      player1Total = 0;
-      player2Total = 0;
-      updateTotals();
-    };
-
     function startGame() {
       player1Name = document.getElementById("player1Name").value || "Player 1";
       player2Name = document.getElementById("player2Name").value || "Player 2";
@@ -126,7 +121,7 @@
       document.getElementById("name2").innerText = player2Name;
       document.getElementById("gameArea").style.display = "block";
       document.getElementById("hajjImageDiv").style.display = "none";
-      player1Total = 0; // Reset totals when starting a new game
+      player1Total = 0;
       player2Total = 0;
       updateTotals();
     }
@@ -136,23 +131,31 @@
       document.getElementById("diceResult").innerText = "🎲 Dice Roll: " + currentDice;
     }
 
+    function formatCard(cardText, points) {
+      const isPositive = points > 0;
+      const sign = isPositive ? '+' : '';
+      const className = isPositive ? 'positive' : 'negative';
+      return `<span class="${className}">${cardText} ${sign}${points}</span>`;
+    }
+
     function playTurn(player) {
       currentCard = cards[Math.floor(Math.random() * cards.length)];
+      let cardPoints = currentCard.points * (currentDice || 1);
+      let cardHtml = formatCard(currentCard.text, cardPoints);
+      document.getElementById("cardText").innerHTML = cardHtml;
 
       const row = document.createElement("tr");
       const cell1 = document.createElement("td");
       const cell2 = document.createElement("td");
 
-      let cardPoints = currentCard.points * (currentDice || 1); // If no dice rolled, default to 1
-
       if (player === 1) {
-        cell1.innerText = currentCard.text;
-        cell2.innerText = "";
+        cell1.innerHTML = cardHtml;
+        cell2.innerHTML = "";
         player1Total += cardPoints;
         history.push({ player: 1, points: cardPoints });
       } else {
-        cell1.innerText = "";
-        cell2.innerText = currentCard.text;
+        cell1.innerHTML = "";
+        cell2.innerHTML = cardHtml;
         player2Total += cardPoints;
         history.push({ player: 2, points: cardPoints });
       }
@@ -162,8 +165,7 @@
       document.getElementById("scoreTable").appendChild(row);
 
       updateTotals();
-
-      currentDice = null; // Reset dice after play
+      currentDice = null;
       document.getElementById("diceResult").innerText = "";
     }
 
@@ -174,14 +176,11 @@
 
     function undoLastTurn() {
       if (history.length === 0) return;
-
       const last = history.pop();
       const table = document.getElementById("scoreTable");
       if (table.rows.length > 0) table.deleteRow(table.rows.length - 1);
-
       if (last.player === 1) player1Total -= last.points;
       else player2Total -= last.points;
-
       updateTotals();
     }
 
@@ -190,7 +189,7 @@
       if (player1Total > player2Total) {
         winner = player1Name;
         loser = player2Name;
-      } else if (player1Total < player2Total) {
+      } else if (player2Total > player1Total) {
         winner = player2Name;
         loser = player1Name;
       } else {
@@ -198,16 +197,16 @@
         loser = "";
       }
 
-      document.getElementById("winnerText").innerText = winner + " Wins with " + (winner === "It's a Tie!" ? "" : player1Total > player2Total ? player1Total : player2Total) + " points!";
-      document.getElementById("loserText").innerText = loser + " with " + (loser === "" ? "" : player1Total < player2Total ? player1Total : player2Total) + " points.";
+      document.getElementById("winnerText").innerText = winner + (winner !== "It's a Tie!" ? " Wins with " + Math.max(player1Total, player2Total) + " points!" : "");
+      document.getElementById("loserText").innerText = loser ? loser + " with " + Math.min(player1Total, player2Total) + " points." : "";
 
       document.getElementById("gameArea").style.display = "none";
       document.getElementById("gameOver").style.display = "block";
-      document.getElementById("resetGame").style.display = "block"; // Show reset button after game ends
+      document.getElementById("resetGame").style.display = "block";
     }
 
     function resetGame() {
-      location.reload();  // Refresh the page to reset the game state
+      location.reload();
     }
   </script>
 
